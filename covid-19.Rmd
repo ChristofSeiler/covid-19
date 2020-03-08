@@ -1,0 +1,170 @@
+---
+title: "COVID-19"
+author:
+- name: Christof Seiler
+  affiliation: Maastricht University
+date: "March 8, 2020"
+output: 
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float: true
+    theme: spacelab
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+library("magrittr")
+library("lubridate")
+```
+
+# Data
+
+Load GitHub data package.
+
+```{r warning=FALSE, message=FALSE}
+devtools::install_github("RamiKrispin/coronavirus")
+library("coronavirus")
+```
+
+This repository is updated daily. The data frame is in variable `coronavirus`.
+
+```{r}
+data("coronavirus")
+head(coronavirus)
+tail(coronavirus)
+```
+
+Summary.
+
+```{r}
+coronavirus %>% 
+  group_by(Country.Region, type) %>%
+  summarize(total_cases = sum(cases)) %>%
+  arrange(-total_cases)
+```
+
+# Visualize Developement
+
+Daily developement of the top 3 nations: 
+
+* China in the province Hubei
+* South Korea
+* Italy
+
+## Hubei Province in China
+
+```{r fig.width=10}
+plot_daily = function(df) {
+  ggplot(df, aes(date, cases, color = type)) + 
+    geom_point() +
+    geom_line() + 
+    facet_wrap(~Province.State) + 
+    scale_x_date(date_minor_breaks = "1 day", 
+                 date_breaks = "1 week", 
+                 date_labels = "%b %d")
+}
+df_china = coronavirus %>% filter(
+  Country.Region == "Mainland China",
+  Province.State == "Hubei"
+  )
+plot_daily(df_china) + ggtitle("Mainland China")
+```
+
+## South Korea
+
+```{r fig.width=10}
+df_south_korea = coronavirus %>% filter(Country.Region == "South Korea")
+plot_daily(df_south_korea) + ggtitle("South Korea")
+```
+
+## Italy
+
+```{r fig.width=10}
+df_italy = coronavirus %>% filter(Country.Region == "Italy")
+plot_daily(df_italy) + ggtitle("Italy")
+```
+
+## Compare to Neighbors
+
+Compare daily developments in the neighbor country.
+
+```{r fig.width=10}
+plot_compare = function(df) {
+  ggplot(df, aes(date, cases, color = Country.Region)) + 
+    geom_point() +
+    geom_line() + 
+    scale_x_date(date_minor_breaks = "1 day", 
+                 date_breaks = "1 week", 
+                 date_labels = "%b %d")
+}
+neighbors = c("Netherlands", "Belgium", "Germany", "Luxembourg")
+df_neighbors = coronavirus %>% filter(
+  Country.Region %in% neighbors & type == "confirmed"
+  )
+plot_compare(df_neighbors)
+```
+
+## Compare to Italy
+
+Compare the Netherlands to Italy.
+
+```{r fig.width=10}
+neighbors = c("Netherlands", "Italy")
+df_neighbors = coronavirus %>% filter(
+  Country.Region %in% neighbors & type == "confirmed"
+  )
+plot_compare(df_neighbors)
+```
+
+# Visualize Align Countries
+
+Align time series with respect to days from first confirmed case in respective country. 
+
+* First, find patient zero for each country.
+* Second, plot aligned number of cases to compare the relative progress between country.
+
+## Patient Zero for Each Country
+
+```{r}
+df = coronavirus
+df_patient_zero = df %>% 
+  group_by(Country.Region) %>%
+  arrange(ymd(date)) %>%
+  summarize(patient_zero = min(date)) %>% 
+  arrange()
+head(df_patient_zero)
+tail(df_patient_zero)
+# add patient zero information to coronavirus data frame
+df %<>% left_join(df_patient_zero, by = "Country.Region")
+df %<>% 
+  group_by(Country.Region) %>%
+  mutate(
+  duration = interval(ymd(patient_zero), ymd(date)) %>% as.numeric("days")
+  ) %>% 
+  ungroup()
+```
+
+## Plot with Aligned Time Series
+
+```{r fig.width=10}
+countries = c("Netherlands", "Belgium", "Germany", 
+              "Luxembourg", "Italy", "South Korea")
+df_countries = df %>% filter(
+  Country.Region %in% countries & type == "confirmed"
+  )
+ggplot(df_countries, 
+       aes(duration, cases, color = Country.Region)) + 
+  geom_point() +
+  geom_line() + 
+  scale_x_continuous(breaks = seq(1, nrow(df_countries), 2)) +
+  xlab("days since patient zero")
+```
+
+# Session Info {.unnumbered}
+
+```{r}
+sessionInfo()
+```
