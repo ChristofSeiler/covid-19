@@ -1,5 +1,5 @@
 # covid-19
 
-A compiled report is available here:
+An exploratory analysis of the daily data in R package [coronavirus](https://ramikrispin.github.io/coronavirus/).
 
-http://christofseiler.github.io/reports/covid-19.html
+A compiled report is available here: http://christofseiler.github.io/reports/covid-19.html
