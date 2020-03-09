@@ -148,7 +148,7 @@ plot_compare(df_neighbors)
 
 ## Compare to Switzerland
 
-Compare the Netherlands to Italy.
+Compare the Netherlands to Switzerland.
 
 ```{r}
 neighbors = c("Netherlands", "Switzerland")
