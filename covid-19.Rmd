@@ -80,8 +80,8 @@ plot_daily(df_china) + ggtitle("Mainland China")
 ## South Korea
 
 ```{r}
-df_south_korea = coronavirus %>% filter(Country.Region == "South Korea")
-plot_daily(df_south_korea) + ggtitle("South Korea")
+df_south_korea = coronavirus %>% filter(Country.Region == "Republic of Korea")
+plot_daily(df_south_korea) + ggtitle("Republic of Korea")
 ```
 
 ## Italy
@@ -194,7 +194,7 @@ df %<>%
 ```{r}
 countries = c("Netherlands", "Belgium", "Germany",
               "Luxembourg", "Italy", "Switzerland", 
-              "South Korea")
+              "Republic of Korea")
 df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed"
   )
