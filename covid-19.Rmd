@@ -191,10 +191,10 @@ df %<>%
 
 ## Plot with Aligned Time Series
 
-```{r}
+```{r fig.height=5, fig.width=10}
 countries = c("Netherlands", "Belgium", "Germany",
               "Luxembourg", "Italy", "Switzerland", 
-              "Republic of Korea")
+              "France", "Republic of Korea")
 df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed"
   )
