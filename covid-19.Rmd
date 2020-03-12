@@ -168,7 +168,9 @@ Align time series with respect to days from first confirmed case in respective c
 * First, find patient zero for each country.
 * Second, plot aligned number of cases to compare the relative progress between country.
 
-## Patient Zero for Each Country
+## Patient Zero
+
+Patient zero for each country.
 
 ```{r}
 df = coronavirus
@@ -189,7 +191,7 @@ df %<>%
   ungroup()
 ```
 
-## Plot with Aligned Time Series
+Plot with aligned time series.
 
 ```{r fig.height=5, fig.width=10}
 countries = c("Netherlands", "Belgium", "Germany",
@@ -204,6 +206,45 @@ ggplot(df_countries,
   geom_line() + 
   scale_x_continuous(breaks = seq(1, nrow(df_countries), 2)) +
   xlab("days since patient zero") +
+  scale_color_few()
+```
+
+## Daily Patient Cases
+
+Align all countries to the day when they first reached 50 confirmed cases for one single day.
+
+```{r warning=FALSE}
+n_cases = 50
+df = coronavirus
+df_patient_n = df %>% 
+  group_by(Country.Region) %>%
+  arrange(ymd(date)) %>%
+  summarize(patient_n = min(date[cases >= n_cases])) %>% 
+  arrange(patient_n)
+head(df_patient_n)
+tail(df_patient_n)
+# add patient zero information to coronavirus data frame
+df %<>% left_join(df_patient_n, by = "Country.Region")
+df %<>% 
+  group_by(Country.Region) %>%
+  mutate(
+  duration = interval(ymd(patient_n), ymd(date)) %>% as.numeric("days")
+  ) %>% 
+  ungroup()
+df_countries = df %>% filter(
+  Country.Region %in% countries & type == "confirmed" & duration >= 0
+  )
+```
+
+Plot with aligned time series.
+
+```{r}
+ggplot(df_countries, 
+       aes(duration, cases, color = Country.Region)) + 
+  geom_point() +
+  geom_line() + 
+  scale_x_continuous(breaks = seq(1, nrow(df_countries), 2)) +
+  xlab(paste("days since >=", n_cases, "cases on single day")) +
   scale_color_few()
 ```
 
