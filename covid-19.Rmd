@@ -173,32 +173,39 @@ Align time series with respect to days from first confirmed case in respective c
 Patient zero for each country.
 
 ```{r}
-df = coronavirus
-df_patient_zero = df %>% 
-  group_by(Country.Region) %>%
-  arrange(ymd(date)) %>%
-  summarize(patient_zero = min(date)) %>% 
-  arrange()
-head(df_patient_zero)
-tail(df_patient_zero)
-# add patient zero information to coronavirus data frame
-df %<>% left_join(df_patient_zero, by = "Country.Region")
-df %<>% 
-  group_by(Country.Region) %>%
-  mutate(
-  duration = interval(ymd(patient_zero), ymd(date)) %>% as.numeric("days")
-  ) %>% 
-  ungroup()
+add_patient_n = function(coronavirus, n_cases = 1) {
+  df = coronavirus
+  df_patient_n = df %>% 
+    group_by(Country.Region) %>%
+    arrange(ymd(date)) %>%
+    summarize(patient_n = min(date[cases >= n_cases])) %>% 
+    arrange(patient_n)
+  head(df_patient_n)
+  tail(df_patient_n)
+  # add patient zero information to coronavirus data frame
+  df %<>% left_join(df_patient_n, by = "Country.Region")
+  df %<>% 
+    group_by(Country.Region) %>%
+    mutate(
+    duration = interval(ymd(patient_n), ymd(date)) %>% as.numeric("days")
+    ) %>% 
+    ungroup()
+  vars = "patient_n"
+  names(vars) = paste0("patient_", n_cases)
+  df %<>% rename(!!vars)
+  df
+}
 ```
 
 Plot with aligned time series.
 
 ```{r fig.height=5, fig.width=10}
+df = add_patient_n(coronavirus, n_cases = 1)
 countries = c("Netherlands", "Belgium", "Germany",
               "Luxembourg", "Italy", "Switzerland", 
               "France", "Korea, South")
 df_countries = df %>% filter(
-  Country.Region %in% countries & type == "confirmed"
+  Country.Region %in% countries & type == "confirmed" & duration >= 1
   )
 ggplot(df_countries, 
        aes(duration, cases, color = Country.Region)) + 
@@ -215,22 +222,7 @@ Align all countries to the day when they first reached 50 confirmed cases for on
 
 ```{r warning=FALSE}
 n_cases = 50
-df = coronavirus
-df_patient_n = df %>% 
-  group_by(Country.Region) %>%
-  arrange(ymd(date)) %>%
-  summarize(patient_n = min(date[cases >= n_cases])) %>% 
-  arrange(patient_n)
-head(df_patient_n)
-tail(df_patient_n)
-# add patient zero information to coronavirus data frame
-df %<>% left_join(df_patient_n, by = "Country.Region")
-df %<>% 
-  group_by(Country.Region) %>%
-  mutate(
-  duration = interval(ymd(patient_n), ymd(date)) %>% as.numeric("days")
-  ) %>% 
-  ungroup()
+df = add_patient_n(coronavirus, n_cases = n_cases)
 df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed" & duration >= 0
   )
