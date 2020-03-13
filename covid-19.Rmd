@@ -71,7 +71,7 @@ plot_daily = function(df) {
     scale_color_few()
 }
 df_china = coronavirus %>% filter(
-  Country.Region == "Mainland China",
+  Country.Region == "China",
   Province.State == "Hubei"
   )
 plot_daily(df_china) + ggtitle("Mainland China")
@@ -80,8 +80,8 @@ plot_daily(df_china) + ggtitle("Mainland China")
 ## South Korea
 
 ```{r}
-df_south_korea = coronavirus %>% filter(Country.Region == "Republic of Korea")
-plot_daily(df_south_korea) + ggtitle("Republic of Korea")
+df_south_korea = coronavirus %>% filter(Country.Region == "Korea, South")
+plot_daily(df_south_korea) + ggtitle("South Korea")
 ```
 
 ## Italy
@@ -98,7 +98,7 @@ df_switzerland = coronavirus %>% filter(Country.Region == "Switzerland")
 plot_daily(df_switzerland) + 
   ggtitle("Switzerland") +
    scale_x_date(date_minor_breaks = "1 day", 
-                 date_breaks = "2 day", 
+                 date_breaks = "7 day", 
                  date_labels = "%b %d")
 ```
 
@@ -109,7 +109,7 @@ df_switzerland = coronavirus %>% filter(Country.Region == "Netherlands")
 plot_daily(df_switzerland) + 
   ggtitle("Netherlands") +
    scale_x_date(date_minor_breaks = "1 day", 
-                 date_breaks = "2 day", 
+                 date_breaks = "7 day", 
                  date_labels = "%b %d")
 ```
 
@@ -157,7 +157,7 @@ df_neighbors = coronavirus %>% filter(
   )
 plot_compare(df_neighbors) +
   scale_x_date(date_minor_breaks = "1 day", 
-                 date_breaks = "2 day", 
+                 date_breaks = "7 day", 
                  date_labels = "%b %d")
 ```
 
@@ -196,7 +196,7 @@ Plot with aligned time series.
 ```{r fig.height=5, fig.width=10}
 countries = c("Netherlands", "Belgium", "Germany",
               "Luxembourg", "Italy", "Switzerland", 
-              "France", "Republic of Korea")
+              "France", "Korea, South")
 df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed"
   )
