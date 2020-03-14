@@ -45,6 +45,12 @@ coronavirus %>%
   arrange(-total_cases)
 ```
 
+Remove zero counts.
+
+```{r}
+coronavirus %<>% filter(cases > 0)
+```
+
 # Visualize Development
 
 Here are the daily development of the following 5 nations:
@@ -207,6 +213,11 @@ countries = c("Netherlands", "Belgium", "Germany",
 df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed" & duration >= 1
   )
+df_countries %<>% filter(
+  !Province.State %in% c("French Polynesia", 
+                         "Saint Barthelemy", 
+                         "St Martin")
+  )
 ggplot(df_countries, 
        aes(duration, cases, color = Country.Region)) + 
   geom_point() +
@@ -225,6 +236,11 @@ n_cases = 50
 df = add_patient_n(coronavirus, n_cases = n_cases)
 df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed" & duration >= 0
+  )
+df_countries %<>% filter(
+  !Province.State %in% c("French Polynesia", 
+                         "Saint Barthelemy", 
+                         "St Martin")
   )
 ```
 
