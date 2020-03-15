@@ -213,11 +213,9 @@ countries = c("Netherlands", "Belgium", "Germany",
 df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed" & duration >= 1
   )
-df_countries %<>% filter(
-  !Province.State %in% c("French Polynesia", 
-                         "Saint Barthelemy", 
-                         "St Martin")
-  )
+exclude_states = c("French Polynesia", "Saint Barthelemy", 
+                   "St Martin", "Fench Guiana")
+df_countries %<>% filter(!Province.State %in% exclude_states)
 ggplot(df_countries, 
        aes(duration, cases, color = Country.Region)) + 
   geom_point() +
@@ -237,11 +235,7 @@ df = add_patient_n(coronavirus, n_cases = n_cases)
 df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed" & duration >= 0
   )
-df_countries %<>% filter(
-  !Province.State %in% c("French Polynesia", 
-                         "Saint Barthelemy", 
-                         "St Martin")
-  )
+df_countries %<>% filter(!Province.State %in% exclude_states)
 ```
 
 Plot with aligned time series.
