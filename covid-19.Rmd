@@ -214,7 +214,8 @@ df_countries = df %>% filter(
   Country.Region %in% countries & type == "confirmed" & duration >= 1
   )
 exclude_states = c("French Polynesia", "Saint Barthelemy", 
-                   "St Martin", "Fench Guiana")
+                   "St Martin", "Fench Guiana", "Mayotte",
+                   "French Guiana")
 df_countries %<>% filter(!Province.State %in% exclude_states)
 ggplot(df_countries, 
        aes(duration, cases, color = Country.Region)) + 
