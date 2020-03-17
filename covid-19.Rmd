@@ -104,18 +104,20 @@ df_switzerland = coronavirus %>% filter(Country.Region == "Switzerland")
 plot_daily(df_switzerland) + 
   ggtitle("Switzerland") +
    scale_x_date(date_minor_breaks = "1 day", 
-                 date_breaks = "7 day", 
+                 date_breaks = "3 day", 
                  date_labels = "%b %d")
 ```
 
 ## The Netherlands
 
 ```{r}
-df_switzerland = coronavirus %>% filter(Country.Region == "Netherlands")
-plot_daily(df_switzerland) + 
+
+df_netherland = coronavirus %>% filter(Country.Region == "Netherlands" &
+                                         Province.State == "Netherlands")
+plot_daily(df_netherland) + 
   ggtitle("Netherlands") +
    scale_x_date(date_minor_breaks = "1 day", 
-                 date_breaks = "7 day", 
+                 date_breaks = "3 day", 
                  date_labels = "%b %d")
 ```
 
@@ -134,8 +136,9 @@ plot_compare = function(df) {
     scale_color_few()
 }
 neighbors = c("Netherlands", "Belgium", "Germany", "Luxembourg")
+provinces = c("", "Netherlands")
 df_neighbors = coronavirus %>% filter(
-  Country.Region %in% neighbors & type == "confirmed"
+  Country.Region %in% neighbors & type == "confirmed" & Province.State %in% provinces
   )
 plot_compare(df_neighbors)
 ```
@@ -147,7 +150,8 @@ Compare the Netherlands to Italy.
 ```{r}
 neighbors = c("Netherlands", "Italy")
 df_neighbors = coronavirus %>% filter(
-  Country.Region %in% neighbors & type == "confirmed"
+  Country.Region %in% neighbors & type == "confirmed" &
+    Province.State %in% provinces
   )
 plot_compare(df_neighbors)
 ```
@@ -159,11 +163,12 @@ Compare the Netherlands to Switzerland.
 ```{r}
 neighbors = c("Netherlands", "Switzerland")
 df_neighbors = coronavirus %>% filter(
-  Country.Region %in% neighbors & type == "confirmed"
+  Country.Region %in% neighbors & type == "confirmed" &
+    Province.State %in% provinces
   )
 plot_compare(df_neighbors) +
   scale_x_date(date_minor_breaks = "1 day", 
-                 date_breaks = "7 day", 
+                 date_breaks = "3 day", 
                  date_labels = "%b %d")
 ```
 
@@ -210,13 +215,13 @@ df = add_patient_n(coronavirus, n_cases = 1)
 countries = c("Netherlands", "Belgium", "Germany",
               "Luxembourg", "Italy", "Switzerland", 
               "France", "Korea, South")
+provinces = c("", "France", "Netherlands")
 df_countries = df %>% filter(
-  Country.Region %in% countries & type == "confirmed" & duration >= 1
+  Country.Region %in% countries & 
+    type == "confirmed" & 
+    duration >= 1 &
+    Province.State %in% provinces
   )
-exclude_states = c("French Polynesia", "Saint Barthelemy", 
-                   "St Martin", "Fench Guiana", "Mayotte",
-                   "French Guiana")
-df_countries %<>% filter(!Province.State %in% exclude_states)
 ggplot(df_countries, 
        aes(duration, cases, color = Country.Region)) + 
   geom_point() +
@@ -234,9 +239,11 @@ Align all countries to the day when they first reached 50 confirmed cases for on
 n_cases = 50
 df = add_patient_n(coronavirus, n_cases = n_cases)
 df_countries = df %>% filter(
-  Country.Region %in% countries & type == "confirmed" & duration >= 0
+  Country.Region %in% countries & 
+    type == "confirmed" & 
+    duration >= 0 &
+    Province.State %in% provinces
   )
-df_countries %<>% filter(!Province.State %in% exclude_states)
 ```
 
 Plot with aligned time series.
