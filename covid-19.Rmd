@@ -111,9 +111,8 @@ plot_daily(df_switzerland) +
 ## The Netherlands
 
 ```{r}
-
 df_netherland = coronavirus %>% filter(Country.Region == "Netherlands" &
-                                         Province.State == "Netherlands")
+                                         Province.State == "")
 plot_daily(df_netherland) + 
   ggtitle("Netherlands") +
    scale_x_date(date_minor_breaks = "1 day", 
@@ -136,7 +135,7 @@ plot_compare = function(df) {
     scale_color_few()
 }
 neighbors = c("Netherlands", "Belgium", "Germany", "Luxembourg")
-provinces = c("", "Netherlands")
+provinces = c("")
 df_neighbors = coronavirus %>% filter(
   Country.Region %in% neighbors & type == "confirmed" & Province.State %in% provinces
   )
