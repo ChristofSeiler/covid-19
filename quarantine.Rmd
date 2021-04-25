@@ -1,22 +1,24 @@
 ---
-title: "COVID-19"
+title: "Quarantine"
 author: "Christof Seiler"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: 
   html_document:
-    number_sections: true
-    toc: true
-    toc_float: true
+    number_sections: false
+    toc: false
+    toc_float: false
     theme: spacelab
     highlight: pygments
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.height=4, fig.width=8)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
+                      fig.height = 4, fig.width = 8)
 library("tidyverse")
 library("magrittr")
 library("ggthemes")
 library("readr")
+library("zoo")
 ```
 
 # Data
@@ -26,7 +28,7 @@ Download and filter data from *Our World in Data*.
 ```{r}
 owid_covid_data <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv")
 owid_covid_data %<>% filter(location == "Switzerland" | location == "Netherlands")
-owid_covid_data %<>% dplyr::filter(date > "2020-11-01")
+owid_covid_data %<>% dplyr::filter(date > "2020-11-15")
 ```
 
 # Visualization
@@ -34,20 +36,52 @@ owid_covid_data %<>% dplyr::filter(date > "2020-11-01")
 Plot data for CH and NL.
 
 ```{r}
-owid_covid_data %<>% mutate(new_cases_per_1e5 = new_cases_per_million*10)
+owid_covid_data %<>% mutate(new_cases_per_1e5 = new_cases_per_million/10)
 ggplot(owid_covid_data, aes(date, new_cases_per_1e5, color = location)) + 
-    geom_point() +
-    geom_line() + 
-    scale_x_date(date_minor_breaks = "1 day", 
-                 date_breaks = "1 week", 
-                 date_labels = "%b %d") +
-    scale_color_few()
+  geom_point() +
+  geom_line() + 
+  scale_x_date(date_minor_breaks = "1 day", 
+               date_breaks = "2 week", 
+               date_labels = "%b %d") +
+  scale_color_few()
+```
+
+Calculate the sum over the past 14 days of new cases for both countries.
+
+```{r}
+bag = owid_covid_data %>% select(location, date, new_cases_per_1e5)
+bag %<>% 
+  group_by(location) %>% 
+  mutate(sum_14_days = rollapply(new_cases_per_1e5, width = list(-(1:14)), 
+                                 FUN = sum, fill = NA, align = "right", 
+                                 partial = FALSE)) %>%
+  ungroup() %>%
+  na.omit()
+ggplot(bag, aes(date, sum_14_days, color = location)) + 
+  geom_point() +
+  geom_line() + 
+  scale_x_date(date_minor_breaks = "1 day", 
+               date_breaks = "2 week", 
+               date_labels = "%b %d") +
+  scale_color_few()
 ```
 
 Show the BAG risk list decision boundary.
 
 ```{r}
-# TODO: lag()
+bag %<>% select(-new_cases_per_1e5)
+bag %<>% pivot_wider(names_from = location, values_from = sum_14_days)
+bag %<>% mutate(BAG_statistic = Netherlands - Switzerland)
+bag %<>% mutate(BAG_decision = if_else(BAG_statistic > 60, "risk", "no risk"))
+ggplot(bag, aes(date, BAG_statistic, color = BAG_decision)) + 
+  geom_hline(yintercept = 60, color = "black", linetype = "dashed") +
+  geom_line(color = "black") + 
+  geom_point() +
+  scale_x_date(date_minor_breaks = "1 day", 
+               date_breaks = "2 week", 
+               date_labels = "%b %d") +
+  scale_y_continuous(breaks = seq(-420,420, 60)) +
+  scale_color_few()
 ```
 
 Session info.
