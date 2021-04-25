@@ -1,0 +1,57 @@
+---
+title: "COVID-19"
+author: "Christof Seiler"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float: true
+    theme: spacelab
+    highlight: pygments
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.height=4, fig.width=8)
+library("tidyverse")
+library("magrittr")
+library("ggthemes")
+library("readr")
+```
+
+# Data
+
+Download and filter data from *Our World in Data*.
+
+```{r}
+owid_covid_data <- read_csv("https://covid.ourworldindata.org/data/owid-covid-data.csv")
+owid_covid_data %<>% filter(location == "Switzerland" | location == "Netherlands")
+owid_covid_data %<>% dplyr::filter(date > "2020-11-01")
+```
+
+# Visualization
+
+Plot data for CH and NL.
+
+```{r}
+owid_covid_data %<>% mutate(new_cases_per_1e5 = new_cases_per_million*10)
+ggplot(owid_covid_data, aes(date, new_cases_per_1e5, color = location)) + 
+    geom_point() +
+    geom_line() + 
+    scale_x_date(date_minor_breaks = "1 day", 
+                 date_breaks = "1 week", 
+                 date_labels = "%b %d") +
+    scale_color_few()
+```
+
+Show the BAG risk list decision boundary.
+
+```{r}
+# TODO: lag()
+```
+
+Session info.
+
+```{r}
+sessionInfo()
+```
