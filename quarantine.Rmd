@@ -80,7 +80,7 @@ ggplot(bag, aes(date, BAG_statistic, color = BAG_decision)) +
   scale_x_date(date_minor_breaks = "1 day", 
                date_breaks = "4 week", 
                date_labels = "%b %d") +
-  scale_y_continuous(breaks = seq(-420,420, 60)) +
+  #scale_y_continuous(breaks = seq(-420,420, 60)) +
   scale_color_few()
 ```
 
